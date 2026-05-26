@@ -33,6 +33,17 @@ export interface Player {
   coinsThisTranscension: Decimal
   coinsThisReincarnation: Decimal
   coinsTotal: Decimal
+  solvedBoards: Decimal
+  sudoku: {
+    boardFill: number
+    boardCellsSolved: number
+    boardCompletions: number
+    autoBoardSubmission: boolean
+    solverPower: number
+    upgrades: number[]
+    log: string[]
+    grid: string[]
+  }
 
   firstOwnedCoin: number
   firstGeneratedCoin: Decimal

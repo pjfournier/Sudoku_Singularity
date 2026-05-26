@@ -272,6 +272,17 @@ export const player: Player = {
   coinsThisTranscension: new Decimal('1e2'),
   coinsThisReincarnation: new Decimal('1e2'),
   coinsTotal: new Decimal('100'),
+  solvedBoards: new Decimal('0'),
+  sudoku: {
+    boardFill: 0,
+    boardCellsSolved: 0,
+    boardCompletions: 0,
+    autoBoardSubmission: false,
+    solverPower: 1,
+    upgrades: Array.from({ length: 10 }, () => 0),
+    log: ['Initializing solver. Grid loaded. 9x9 standard.'],
+    grid: Array.from({ length: 81 }, () => '')
+  },
 
   firstOwnedCoin: 0,
   firstGeneratedCoin: new Decimal('0'),
@@ -4698,12 +4709,34 @@ const tick = () => {
   }
 }
 
+const updateSudokuSlice = (dt: number) => {
+  const solvedBoardMultiplier = player.solvedBoards.add(1).pow(0.25)
+  const upgradePower = 1 + player.sudoku.upgrades.reduce((acc, value) => acc + value, 0) * 0.08
+  const boardSpeed = dt * solvedBoardMultiplier.toNumber() * player.sudoku.solverPower * upgradePower
+  player.sudoku.boardFill = Math.min(100, player.sudoku.boardFill + boardSpeed * 2.5)
+  player.sudoku.boardCellsSolved = Math.min(81, Math.floor(player.sudoku.boardFill / 100 * 81))
+
+  if (player.sudoku.boardFill >= 100) {
+    player.sudoku.boardFill = 0
+    player.sudoku.boardCompletions += 1
+    const boardGain = Decimal.max(1, Decimal.div(Decimal.log(player.coins.add(1), 10), 2))
+    player.solvedBoards = player.solvedBoards.add(boardGain)
+    player.coins = new Decimal(100)
+    player.coinsThisPrestige = new Decimal(100)
+    if (player.sudoku.log.length > 120) player.sudoku.log.shift()
+    player.sudoku.log.push(player.sudoku.boardCompletions % 3 === 0
+      ? '3 in the corner has appeared again. Statistically insignificant. Monitoring continues.'
+      : `Board submitted. +${format(boardGain, 2)} Solved Boards recorded.`)
+  }
+}
+
 // eslint-disable-next-line no-shadow
 const tack = (dt: number) => {
   if (!G.timeWarp) {
     // Adds Resources (coins, ants, etc)
     const timeMult = calculateGlobalSpeedMult()
     resourceGain(dt * timeMult)
+    updateSudokuSlice(dt * timeMult)
     generateAntsAndCrumbs(dt)
 
     // Adds time (in milliseconds) to all reset functions, and quarks timer.

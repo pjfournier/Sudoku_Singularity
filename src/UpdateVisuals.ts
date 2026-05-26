@@ -239,6 +239,17 @@ export const visualUpdateBuildings = () => {
     }
 
     DOMCacheGetOrSet('coinVanity').innerHTML = `<i>${i18next.t(`buildings.coinFlavorTexts.${vanityIndex}`)}</i>`
+    DOMCacheGetOrSet('npSummary').textContent = `Number Points (NP): ${format(player.coins, 2, false)} | Solved Boards: ${format(player.solvedBoards, 2, false)}`
+    DOMCacheGetOrSet('sudokuBoardStatus').textContent = `Board Fill: ${format(player.sudoku.boardFill, 2)}% | Cells Solved: ${player.sudoku.boardCellsSolved}/81 | Completed Boards: ${format(player.sudoku.boardCompletions, 0, true)}`
+    DOMCacheGetOrSet('sudokuBoardGrid').textContent = Array.from({ length: 9 }, (_, r) => {
+      return Array.from({ length: 9 }, (_, c) => {
+        const cellIndex = r * 9 + c
+        if (cellIndex < player.sudoku.boardCellsSolved) return `${(cellIndex % 9) + 1}`
+        if ((cellIndex + player.sudoku.boardCompletions) % 17 === 0) return '·'
+        return '□'
+      }).join(' ')
+    }).join('\n')
+    DOMCacheGetOrSet('solverLogPanel').innerHTML = player.sudoku.log.slice(-10).map((entry) => `<div>${entry}</div>`).join('')
 
     for (let i = 1; i <= 5; i++) {
       const place = G[coinUpper[i - 1]]
