@@ -299,6 +299,17 @@ export const playerSchema = z.object({
   coinsThisTranscension: decimalSchema,
   coinsThisReincarnation: decimalSchema,
   coinsTotal: decimalSchema,
+  solvedBoards: decimalSchema.default(() => blankSave.solvedBoards),
+  sudoku: z.object({
+    boardFill: z.number(),
+    boardCellsSolved: z.number(),
+    boardCompletions: z.number(),
+    autoBoardSubmission: z.boolean(),
+    solverPower: z.number(),
+    upgrades: z.number().array(),
+    log: z.string().array(),
+    grid: z.string().array()
+  }).default(() => JSON.parse(JSON.stringify(blankSave.sudoku))),
 
   firstOwnedCoin: z.number(),
   firstGeneratedCoin: decimalSchema,
